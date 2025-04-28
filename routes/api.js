@@ -13,3 +13,31 @@ app.post("/api/users", async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 });
+
+// Add Exercise (POST /api/users/:_id/exercises)
+app.post("/api/users/:_id/exercises", async (req, res) => {
+  const { description, duration, date } = req.body;
+
+  try {
+    const user = await User.findById(req.params._id);
+    if (!user) return res.status(404).send("User not found");
+
+    user.log.push({
+      description,
+      duration: Number(duration),
+      date: date ? new Date(date) : new Date(),
+    });
+
+    await user.save();
+
+    res.json({
+      username: user.username,
+      _id: user._id,
+      description,
+      duration: Number(duration),
+      date: new Date(date || Date.now()).toDateString,
+    });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
