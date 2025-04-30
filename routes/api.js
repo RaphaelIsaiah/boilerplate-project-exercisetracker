@@ -4,6 +4,16 @@ const User = require("../models/User.js");
 
 // API endpoints
 
+// Get All Users (GET /api/users)
+router.get("/users", async (req, res) => {
+  try {
+    const users = await User.find({}, "username _id");
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Create User (POST /api/users)
 router.post("/users", async (req, res) => {
   try {
