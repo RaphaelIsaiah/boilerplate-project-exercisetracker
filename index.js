@@ -21,9 +21,26 @@ app.use(express.urlencoded({ extended: true }));
 
 // Connect DB
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(process.env.MONGO_URI, {
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+    maxPoolSize: 10,
+    retryWrites: true,
+    retryReads: true,
+  })
   .then(() => console.log("MongoDB Connected!"))
-  .catch((err) => console.error("Connection error:", err));
+  .catch((err) => {
+    console.error("MongoDB Connection error:", err);
+    process.exit(1);
+  });
+
+// Connection events
+mongoose.connection.on("connected", () =>
+  console.log("Mongoose connected to DB cluster")
+);
+mongoose.connection.on("error", (err) =>
+  console.error("Mongoose connection error:", err)
+);
 
 // Routes
 const apiRoutes = require("./routes/api"); // Import routes
@@ -38,6 +55,24 @@ app.use((err, req, res, next) => {
 // Homepage
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/views/index.html");
+});
+
+// Shutdown Handler For development (Ctrl+C)
+process.on("SIGINT", async () => {
+  if (mongoose.connection.readyState === 1) {
+    await mongoose.connection.close();
+    console.log("Mongoose disconnected (SIGINT)");
+  }
+  process.exit(0);
+});
+
+// Shutdown Handler For production (Vercel)
+process.on("SIGTERM", async () => {
+  if (mongoose.connection.readyState === 1) {
+    await mongoose.connection.close();
+    console.log("Mongoose disconnected (SIGTERM)");
+  }
+  process.exit(0);
 });
 
 // Start server
