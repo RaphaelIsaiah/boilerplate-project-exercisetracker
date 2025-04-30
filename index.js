@@ -22,11 +22,14 @@ app.use(express.urlencoded({ extended: true }));
 // Connect DB
 mongoose
   .connect(process.env.MONGO_URI, {
-    serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 45000,
-    maxPoolSize: 10,
+    serverSelectionTimeoutMS: 3000, // Faster failover (Vercel has short cold starts)
+    connectTimeoutMS: 5000, // Initial connection timeout
+    socketTimeoutMS: 30000, // Active query timeout
+    maxPoolSize: 5, // Reduced for serverless (default 10 is too high)
     retryWrites: true,
     retryReads: true,
+    heartbeatFrequencyMS: 10000, // Prevent idle disconnects
+    bufferCommands: false, // Fail fast if no connection
   })
   .then(() => console.log("MongoDB Connected!"))
   .catch((err) => {
