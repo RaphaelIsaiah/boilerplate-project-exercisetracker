@@ -4,11 +4,7 @@
   "functions": {
     "index.js": {
       "memory": 1024,
-      "maxDuration": 10,
-      "runtime": {
-        "type": "nodejs",
-        "version": "18.x"
-      }
+      "maxDuration": 10
     }
   },
   "routes": [
