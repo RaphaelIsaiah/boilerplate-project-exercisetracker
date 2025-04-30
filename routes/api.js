@@ -22,6 +22,23 @@ router.post("/users", async (req, res) => {
 router.post("/users/:_id/exercises", async (req, res) => {
   const { description, duration, date } = req.body;
 
+  // input validation for description and duration
+  if (!description || !duration) {
+    return res
+      .status(400)
+      .json({ error: "Description and duration are required" });
+  }
+
+  // duration validation
+  if (isNaN(duration)) {
+    return res.status(400).json({ error: "Duration must be a number" });
+  }
+
+  // date validation
+  if (date && isNaN(new Date(date))) {
+    return res.status(400).json({ error: "Invalid date format" });
+  }
+
   try {
     const user = await User.findById(req.params._id);
     if (!user) return res.status(404).send("User not found");

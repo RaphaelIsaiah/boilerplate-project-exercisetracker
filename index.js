@@ -25,6 +25,12 @@ mongoose
 const apiRoutes = require("./routes/api"); // Import routes
 app.use("/api", apiRoutes); // All routes in api.js will be prefixed with /api
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: "Something went wrong!" });
+});
+
 // Homepage
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/views/index.html");
