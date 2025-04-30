@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const User = require("../models/User");
+const User = require("../models/User.js");
 
 // API endpoints
 
@@ -40,6 +40,40 @@ router.post("/users/:_id/exercises", async (req, res) => {
       description,
       duration: Number(duration),
       date: new Date(date || Date.now()).toDateString(),
+    });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Add Log Retrieval Endpoint (GET /api/users/:_id/logs)
+router.get("/users/:_id/logs", async (req, res) => {
+  try {
+    const user = await User.findById(req.params._id);
+    if (!user) return res.status(404).send("User not found");
+
+    let log = user.log;
+
+    // Optional filtering
+    if (req.query.from || req.query.to) {
+      const fromDate = new Date(req.query.from || 0);
+      const toDate = new Date(req.query.to || Date.now());
+      log = log.filter((ex) => ex.date >= fromDate && ex.date <= toDate);
+    }
+
+    if (req.query.limit) {
+      log = log.slice(0, parseInt(req.query.limit));
+    }
+
+    res.json({
+      username: user.username,
+      count: log.length,
+      _id: user._id,
+      log: log.map((ex) => ({
+        description: ex.description,
+        duration: ex.duration,
+        date: ex.date.toDateString(),
+      })),
     });
   } catch (err) {
     res.status(400).json({ error: err.message });
