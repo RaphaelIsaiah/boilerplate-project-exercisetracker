@@ -3,13 +3,17 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const mongoose = require("mongoose");
+const path = require("path");
 
 // Initialize app
 const app = express();
 
 // Middleware
 app.use(cors());
-app.use(express.static("public"));
+
+// Serve static files from both root and /public paths
+app.use(express.static(path.join(__dirname, "public"))); // Files at /
+app.use("/public", express.static(path.join(__dirname, "public"))); // Files at /public
 
 // Parse JSON bodies
 app.use(express.json());
