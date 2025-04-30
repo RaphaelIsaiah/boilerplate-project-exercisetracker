@@ -5,7 +5,10 @@
     "index.js": {
       "memory": 1024,
       "maxDuration": 10,
-      "runtime": "nodejs18.x"
+      "runtime": {
+        "type": "nodejs",
+        "version": "18.x"
+      }
     }
   },
   "routes": [
