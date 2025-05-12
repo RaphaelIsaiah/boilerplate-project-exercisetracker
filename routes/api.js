@@ -46,7 +46,12 @@ router.post("/users/:_id/exercises", async (req, res) => {
 
   // date validation
   if (date && isNaN(new Date(date))) {
-    return res.status(400).json({ error: "Invalid date format" });
+    return res
+      .status(400)
+      .json({
+        error: "Invalid date format",
+        timestamp: new Date().toISOString(), // test to aid debugging
+      });
   }
 
   try {
