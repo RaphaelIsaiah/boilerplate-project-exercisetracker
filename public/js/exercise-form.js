@@ -1,3 +1,26 @@
+// Toast helper function
+function showToast(message, isError = false) {
+  const toast = document.getElementById("toast");
+  const toastContent = toast.querySelector("div");
+
+  // Set styles based on error/success
+  toastContent.className = `px-t py-3 rounde-lg shadow-mdd text-white font-medium ${
+    isError ? "bg-red-500" : "bg-green-500"
+  }`;
+  toastContent.textContent = message;
+
+  // Show animation
+  toast.classList.remove("hidden", "toast-animate-out");
+  toast.classList.add("toast-animate-in");
+
+  // Auto-hide after 3 seconds
+  setTimeout(() => {
+    toast.classList.remove("toast-animate-in");
+    toast.classList.add("toast-animate-out");
+    setTimeout(() => toast.classList.add("hidden"), 3000);
+  }, 3000);
+}
+
 // Get the form element and add submit event listener
 document
   .getElementById("exercise-form")
@@ -24,11 +47,11 @@ document
       if (!response.ok) throw new Error("Submission failed");
 
       // Success feedback (optional)
-      alert("Exercise added successfully!");
+      showToast("Exercise added successfully!");
       e.target.reset(); // Clear form
     } catch (error) {
       console.error("Error:", error);
-      alert("Error: " + error.message);
+      showToast("Error: " + error.message);
     } finally {
       // Reset button (runs on success and failure)
       submitBtn.disabled = false;
