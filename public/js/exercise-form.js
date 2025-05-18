@@ -1,60 +1,116 @@
-// Toast helper function
+// ======================
+// Helper Functions
+// ======================
+
+/**
+ * Shows a toast notification
+ */
 function showToast(message, isError = false) {
   const toast = document.getElementById("toast");
-  const toastContent = toast.querySelector("div");
+  const icon = toast.querySelector("#toast-icon");
+  const toastMsg = document.getElementById("toast-message");
 
-  // Set styles based on error/success
-  toastContent.className = `px-t py-3 rounde-lg shadow-mdd text-white font-medium ${
+  // Set styles
+  toast.firstElementChild.className = `px-6 py-3 rounded-lg shadow-md text-white font-medium flex items-center ${
     isError ? "bg-red-500" : "bg-green-500"
   }`;
-  toastContent.textContent = message;
 
-  // Show animation
-  toast.classList.remove("hidden", "toast-animate-out");
-  toast.classList.add("toast-animate-in");
+  // Set icon
+  icon.innerHTML = isError
+    ? `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />`
+    : `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />`;
 
-  // Auto-hide after 3 seconds
+  toastMsg.textContent = message;
+
+  // Show toast
+  toast.classList.remove("hidden", "toast-exit");
+  toast.classList.add("toast-enter");
+
+  // Auto-hide
   setTimeout(() => {
-    toast.classList.remove("toast-animate-in");
-    toast.classList.add("toast-animate-out");
-    setTimeout(() => toast.classList.add("hidden"), 3000);
+    toast.classList.remove("toast-enter");
+    toast.classList.add("toast-exit");
+    setTimeout(() => toast.classList.add("hidden"), 300);
   }, 3000);
 }
 
-// Get the form element and add submit event listener
+/**
+ * Toggles loading state
+ */
+function setLoading(isLoading) {
+  const spinner = document.getElementById("spinner");
+  const text = document.getElementById("submit-text");
+
+  if (isLoading) {
+    spinner.classList.remove("hidden");
+    text.textContent = "Processing...";
+  } else {
+    spinner.classList.add("hidden");
+    text.textContent = "Add Exercise";
+  }
+}
+
+// ======================
+// Form Validation
+// ======================
+
+function validateForm() {
+  const userId = document.getElementById("uid").value.trim();
+  const description = document.getElementById("desc").value.trim();
+  const durationInput = document.getElementById("dur").value.trim();
+  const date = document.getElementById("date").value.trim();
+
+  // 1. Basic presence checks
+  if (!userId) return "User ID is required";
+  if (!description || !durationInput)
+    return "Description and duration are required";
+
+  // 2. Convert duration to number
+  const duration = parseFloat(durationInput);
+  if (isNaN(duration)) return "Duration must be a number";
+  if (duration <= 0) return "Duration must be positive";
+
+  // 3. Date format check
+  if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return "Date must be YYYY-MM-DD";
+  }
+
+  return null;
+}
+
+// ======================
+// Main Form Handler
+// ======================
+
 document
   .getElementById("exercise-form")
   .addEventListener("submit", async (e) => {
     e.preventDefault();
-    const submitBtn = e.target.querySelector("[type='submit']");
-
-    // Show loading state for visual feedback
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Processing...";
+    setLoading(true);
 
     try {
-      // Prepare form data
-      const userId = document.getElementById("uid").value;
-      e.target.action = `/api/users/${userId}/exercises`;
+      // Validate
+      const error = validateForm();
+      if (error) throw new Error(error);
 
-      // Submit form using modern Fetch API submission
-      const response = await fetch(e.target.action, {
+      // Submit
+      const userId = document.getElementById("uid").value.trim();
+      const response = await fetch(`/api/users/${userId}/exercises`, {
         method: "POST",
-        body: new FormData(e.target), // Automatically captures all the form fields
+        body: new FormData(e.target),
       });
 
-      // Handle non-OK responses (HTTP errors)
-      if (!response.ok) throw new Error("Submission failed");
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || "Submission failed");
+      }
 
-      // Success feedback (optional)
-      showToast("Exercise added successfully!");
-      e.target.reset(); // Clear form
+      // Success
+      showToast("Exercise logged successfully!");
+      e.target.reset();
     } catch (error) {
-      console.error("Error:", error);
-      showToast("Error: " + error.message);
+      showToast(error.message, true);
     } finally {
-      // Reset button (runs on success and failure)
-      submitBtn.disabled = false;
-      submitBtn.textContent = "Add Exercise";
+      setLoading(false);
     }
   });

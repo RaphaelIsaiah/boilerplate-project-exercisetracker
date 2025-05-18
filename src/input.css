@@ -1,6 +1,13 @@
 @import "tailwindcss";
 
-/* Toast animations */
+/* Toast Animations */
+.toast-enter {
+  animation: toastIn 0.3s ease-out forwards;
+}
+.toast-exit {
+  animation: toastOut 0.3s ease-in forwards;
+}
+
 @keyframes toastIn {
   from {
     transform: translateX(100%);
@@ -20,11 +27,4 @@
     transform: translateX(100%);
     opacity: 0;
   }
-}
-
-.toast-animate-in {
-  animation: toastIn 0.3s ease-out forwards;
-}
-.toast-animate-out {
-  animation: toastOut 0.3s ease-in forwards;
 }
