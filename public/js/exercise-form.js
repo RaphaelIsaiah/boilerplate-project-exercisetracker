@@ -93,11 +93,21 @@ document
       const error = validateForm();
       if (error) throw new Error(error);
 
-      // Submit
+      // Prepare data with proper types
       const userId = document.getElementById("uid").value.trim();
+      const formData = {
+        description: document.getElementById("desc").value.trim(),
+        duration: parseFloat(document.getElementById("dur").value.trim()),
+        date: document.getElementById("date").value.trim() || undefined,
+      };
+
+      // Submit to API
       const response = await fetch(`/api/users/${userId}/exercises`, {
         method: "POST",
-        body: new FormData(e.target),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
