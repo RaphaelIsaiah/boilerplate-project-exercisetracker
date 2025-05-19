@@ -32,6 +32,13 @@ function showToast(message, isError = false) {
     toast.classList.add("toast-exit");
     setTimeout(() => toast.classList.add("hidden"), 300);
   }, 3000);
+
+  // Add line break if message is long
+  if (message.length > 30) {
+    toastMsg.classList.add("whitespace-pre-line", "text-left");
+  } else {
+    toastMsg.classList.remove("whitespace-pre-line", "text-left");
+  }
 }
 
 /**
