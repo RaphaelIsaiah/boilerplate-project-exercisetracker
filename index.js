@@ -8,6 +8,37 @@ const path = require("path");
 // Initialize app
 const app = express();
 
+// 1. Database connection setup (with caching)
+let cachedDb = null; // Connection cache for severless
+
+const dbOptions = {
+  serverSelectionTimeoutMS: 3000, // Faster failover (Vercel has short cold starts)
+  connectTimeoutMS: 5000, // Initial connection timeout
+  socketTimeoutMS: 30000, // Active query timeout
+  maxPoolSize: 5, // Reduced for serverless (default 10 is too high)
+  retryWrites: true,
+  retryReads: true,
+  heartbeatFrequencyMS: 10000, // Prevent idle disconnects
+  bufferCommands: false, // Fail fast if no connection in production
+};
+
+async function connectToDatabase() {
+  if (cachedDb) {
+    console.log("Using cached database connection");
+    return cachedDb;
+  }
+
+  try {
+    console.log("Establishing new database connection...");
+    const client = await mongoose.connect(process.env.MONGO_URI, dbOptions);
+    cachedDb = client.connection;
+    return cachedDb;
+  } catch (err) {
+    console.error("Database connection failed:", err.message);
+    throw err;
+  }
+}
+
 // Middleware
 app.use(cors());
 
@@ -19,23 +50,23 @@ app.use("/public", express.static(path.join(__dirname, "public"))); // Files at 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Connect DB
-mongoose
-  .connect(process.env.MONGO_URI, {
-    serverSelectionTimeoutMS: 3000, // Faster failover (Vercel has short cold starts)
-    connectTimeoutMS: 5000, // Initial connection timeout
-    socketTimeoutMS: 30000, // Active query timeout
-    maxPoolSize: 5, // Reduced for serverless (default 10 is too high)
-    retryWrites: true,
-    retryReads: true,
-    heartbeatFrequencyMS: 10000, // Prevent idle disconnects
-    bufferCommands: false, // Fail fast if no connection
-  })
-  .then(() => console.log("MongoDB Connected!"))
-  .catch((err) => {
-    console.error("MongoDB Connection error:", err);
-    process.exit(1);
-  });
+// // Connect DB
+// mongoose
+//   .connect(process.env.MONGO_URI, {
+//     serverSelectionTimeoutMS: 3000, // Faster failover (Vercel has short cold starts)
+//     connectTimeoutMS: 5000, // Initial connection timeout
+//     socketTimeoutMS: 30000, // Active query timeout
+//     maxPoolSize: 5, // Reduced for serverless (default 10 is too high)
+//     retryWrites: true,
+//     retryReads: true,
+//     heartbeatFrequencyMS: 10000, // Prevent idle disconnects
+//     bufferCommands: false, // Fail fast if no connection
+//   })
+//   .then(() => console.log("MongoDB Connected!"))
+//   .catch((err) => {
+//     console.error("MongoDB Connection error:", err);
+//     process.exit(1);
+//   });
 
 // Connection events
 mongoose.connection.on("connected", () =>
