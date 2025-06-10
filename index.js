@@ -39,6 +39,22 @@ async function connectToDatabase() {
   }
 }
 
+// 2. Connection event handlers
+mongoose.connection.on("connected", () => {
+  console.log("Mongoose connected to DB cluster");
+  cachedDb = mongoose.connection; // Update cache
+});
+
+mongoose.connection.on("disconnected", () => {
+  console.log("Mongoose disconnected");
+  cachedDb = null; // Clear cache
+  // Auto-reconnect handled by Mongoose driver
+});
+
+mongoose.connection.on("error", (err) =>
+  consol.error("Mongoose connection error:", err)
+);
+
 // Middleware
 app.use(cors());
 
@@ -69,12 +85,12 @@ app.use(express.urlencoded({ extended: true }));
 //   });
 
 // Connection events
-mongoose.connection.on("connected", () =>
-  console.log("Mongoose connected to DB cluster")
-);
-mongoose.connection.on("error", (err) =>
-  console.error("Mongoose connection error:", err)
-);
+// mongoose.connection.on("connected", () =>
+//   console.log("Mongoose connected to DB cluster")
+// );
+// mongoose.connection.on("error", (err) =>
+//   console.error("Mongoose connection error:", err)
+// );
 
 // Routes
 const apiRoutes = require("./routes/api"); // Import routes
