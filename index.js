@@ -127,8 +127,24 @@ app.get("/", (req, res) => {
 
 // 5. Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: "Something went wrong!" });
+  console.error("Error:", err.stack);
+
+  // Handle MongoDB connection errors specifically
+  if (err.message.includes("initial connection")) {
+    return res.status(503).json({
+      error: "Database initializing",
+      action: "Please retry in 5 seconds",
+    });
+  }
+
+  // Generic error response
+  res.status(500).json({
+    error: "Internal server error",
+    ...(process.env.NODE_ENV === "development" && {
+      details: err.message,
+      stack: err.stack,
+    }),
+  });
 });
 
 // Shutdown Handler For development (Ctrl+C)
