@@ -147,23 +147,34 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Shutdown Handler For development (Ctrl+C)
-process.on("SIGINT", async () => {
+// 6. Shutdown Handlers
+const gracefulShutdown = async () => {
   if (mongoose.connection.readyState === 1) {
     await mongoose.connection.close();
-    console.log("Mongoose disconnected (SIGINT)");
+    console.log("Mongoose disconnected through shutdown");
   }
   process.exit(0);
-});
+};
+
+process.on("SIGINT", gracefulShutdown); // for developement (Ctrl+C)
+process.on("SIGTERM", gracefulShutdown); // for production (Vercel)
+
+// process.on("SIGINT", async () => {
+//   if (mongoose.connection.readyState === 1) {
+//     await mongoose.connection.close();
+//     console.log("Mongoose disconnected (SIGINT)");
+//   }
+//   process.exit(0);
+// });
 
 // Shutdown Handler For production (Vercel)
-process.on("SIGTERM", async () => {
-  if (mongoose.connection.readyState === 1) {
-    await mongoose.connection.close();
-    console.log("Mongoose disconnected (SIGTERM)");
-  }
-  process.exit(0);
-});
+// process.on("SIGTERM", async () => {
+//   if (mongoose.connection.readyState === 1) {
+//     await mongoose.connection.close();
+//     console.log("Mongoose disconnected (SIGTERM)");
+//   }
+//   process.exit(0);
+// });
 
 // Start server
 const listener = app.listen(process.env.PORT || 3000, () => {
