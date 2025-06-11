@@ -55,7 +55,7 @@ mongoose.connection.on("error", (err) =>
   consol.error("Mongoose connection error:", err)
 );
 
-// --- Express Middleware ---
+// 3. Express Middleware
 app.use(cors());
 
 // Parse JSON bodies
@@ -106,19 +106,29 @@ app.use("/api", async (req, res, next) => {
 //   console.error("Mongoose connection error:", err)
 // );
 
-// Routes
+// 4. Routes
 const apiRoutes = require("./routes/api"); // Import routes
 app.use("/api", apiRoutes); // All routes in api.js will be prefixed with /api
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: "Something went wrong!" });
+// Health check endpoint
+app.get("/health", (req, res) => {
+  const dbStatus = mongoose.STATES[mongoose.connection.readyState];
+  res.json({
+    status: dbStatus === "connected" ? "healthy" : "degraded",
+    database: dbStatus,
+    timestamp: new Date().toISOString(),
+  });
 });
 
 // Homepage
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/views/index.html");
+});
+
+// 5. Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: "Something went wrong!" });
 });
 
 // Shutdown Handler For development (Ctrl+C)
