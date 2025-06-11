@@ -55,16 +55,30 @@ mongoose.connection.on("error", (err) =>
   consol.error("Mongoose connection error:", err)
 );
 
-// Middleware
+// --- Express Middleware ---
 app.use(cors());
-
-// Serve static files from both root and /public paths
-app.use(express.static(path.join(__dirname, "public"))); // Files at /
-app.use("/public", express.static(path.join(__dirname, "public"))); // Files at /public
 
 // Parse JSON bodies
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve static files from both root and /public paths
+app.use(express.static(path.join(__dirname, "public"))); // Files at "/"
+app.use("/public", express.static(path.join(__dirname, "public"))); // Files at "/public"
+
+// Database connection middleware for API routes
+app.use("/api", async (req, res, next) => {
+  try {
+    await connectToDatabase();
+    next();
+  } catch (err) {
+    res.status(503).json({
+      error: "Service unavailable",
+      message: "Database connection failed",
+      retry: true,
+    });
+  }
+});
 
 // // Connect DB
 // mongoose
