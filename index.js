@@ -176,7 +176,25 @@ process.on("SIGTERM", gracefulShutdown); // for production (Vercel)
 //   process.exit(0);
 // });
 
-// Start server
-const listener = app.listen(process.env.PORT || 3000, () => {
-  console.log("Your app is listening on port " + listener.address().port);
-});
+// 7. Server startup
+//  Only start local server if not in vercel environment
+if (!process.env.VERCEL) {
+  const PORT = process.env.PORT || 3000;
+  const server = app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
+  });
+
+  // Handle uncaught exceptions
+  process.on("uncaughtException", (err) => {
+    console.error("Uncaught Exception:", err);
+    server.close(() => process.exit(1));
+  });
+}
+
+// Export for Vercel serverless
+module.exports = app;
+
+// const listener = app.listen(process.env.PORT || 3000, () => {
+//   console.log("Your app is listening on port " + listener.address().port);
+// });
