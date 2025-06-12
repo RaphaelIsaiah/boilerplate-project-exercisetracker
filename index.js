@@ -86,32 +86,6 @@ app.use("/api", async (req, res, next) => {
   }
 });
 
-// // Connect DB
-// mongoose
-//   .connect(process.env.MONGO_URI, {
-//     serverSelectionTimeoutMS: 3000, // Faster failover (Vercel has short cold starts)
-//     connectTimeoutMS: 5000, // Initial connection timeout
-//     socketTimeoutMS: 30000, // Active query timeout
-//     maxPoolSize: 5, // Reduced for serverless (default 10 is too high)
-//     retryWrites: true,
-//     retryReads: true,
-//     heartbeatFrequencyMS: 10000, // Prevent idle disconnects
-//     bufferCommands: false, // Fail fast if no connection
-//   })
-//   .then(() => console.log("MongoDB Connected!"))
-//   .catch((err) => {
-//     console.error("MongoDB Connection error:", err);
-//     process.exit(1);
-//   });
-
-// Connection events
-// mongoose.connection.on("connected", () =>
-//   console.log("Mongoose connected to DB cluster")
-// );
-// mongoose.connection.on("error", (err) =>
-//   console.error("Mongoose connection error:", err)
-// );
-
 // 4. Routes
 const apiRoutes = require("./routes/api"); // Import routes
 app.use("/api", apiRoutes); // All routes in api.js will be prefixed with /api
@@ -165,23 +139,6 @@ const gracefulShutdown = async () => {
 process.on("SIGINT", gracefulShutdown); // for developement (Ctrl+C)
 process.on("SIGTERM", gracefulShutdown); // for production (Vercel)
 
-// process.on("SIGINT", async () => {
-//   if (mongoose.connection.readyState === 1) {
-//     await mongoose.connection.close();
-//     console.log("Mongoose disconnected (SIGINT)");
-//   }
-//   process.exit(0);
-// });
-
-// Shutdown Handler For production (Vercel)
-// process.on("SIGTERM", async () => {
-//   if (mongoose.connection.readyState === 1) {
-//     await mongoose.connection.close();
-//     console.log("Mongoose disconnected (SIGTERM)");
-//   }
-//   process.exit(0);
-// });
-
 // 7. Server startup
 //  Only start local server if not in vercel environment
 if (!process.env.VERCEL) {
@@ -200,7 +157,3 @@ if (!process.env.VERCEL) {
 
 // Export for Vercel serverless
 module.exports = app;
-
-// const listener = app.listen(process.env.PORT || 3000, () => {
-//   console.log("Your app is listening on port " + listener.address().port);
-// });
