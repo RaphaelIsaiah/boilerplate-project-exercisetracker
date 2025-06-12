@@ -52,7 +52,7 @@ mongoose.connection.on("disconnected", () => {
 });
 
 mongoose.connection.on("error", (err) =>
-  consol.error("Mongoose connection error:", err)
+  console.error("Mongoose connection error:", err)
 );
 
 // 3. Express Middleware
@@ -69,12 +69,18 @@ app.use("/public", express.static(path.join(__dirname, "public"))); // Files at 
 // Database connection middleware for API routes
 app.use("/api", async (req, res, next) => {
   try {
-    await connectToDatabase();
+    // Set up a 3 second timeout promise
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Connection timeout")), 3000)
+    );
+
+    // Race between connection and timeout
+    await Promise.race([connectToDatabase(), timeoutPromise]);
     next();
   } catch (err) {
     res.status(503).json({
       error: "Service unavailable",
-      message: "Database connection failed",
+      message: err.message, // "Connection timeout" or DB error
       retry: true,
     });
   }
