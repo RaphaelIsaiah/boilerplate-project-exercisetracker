@@ -1,30 +1,27 @@
 {
   "version": 2,
-  "regions": ["fra1"],
   "builds": [
     {
       "src": "index.js",
       "use": "@vercel/node",
       "config": {
         "runtime": "nodejs18.x",
-        "memory": 1024,
-        "maxDuration": 10,
-        "includeFiles": ["public/**", "views/**", "routes/**", "models/**"]
+        "includeFiles": ["public/**"]
       }
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "index.js",
-      "methods": ["GET", "POST", "PUT", "DELETE"]
+      "dest": "index.js"
+    },
+    {
+      "src": "/js/(.*)",
+      "dest": "/public/js/$1"
     },
     {
       "src": "/(.*)",
       "dest": "index.js"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }
