@@ -6,22 +6,36 @@
       "use": "@vercel/node",
       "config": {
         "runtime": "nodejs18.x",
-        "includeFiles": ["public/**"]
+        "includeFiles": ["public/**", "views/**", "models/**"]
       }
     }
   ],
   "routes": [
     {
-      "src": "/api/(.*)",
-      "dest": "index.js"
+      "src": "/js/(.*)",
+      "dest": "/public/js/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
     },
     {
-      "src": "/js/(.*)",
-      "dest": "/public/js/$1"
+      "src": "/public/output.css",
+      "dest": "/public/output.css",
+      "headers": {
+        "Cache-Control": "public, max-age=3600"
+      }
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "index.js",
+      "methods": ["GET", "POST"]
     },
     {
       "src": "/(.*)",
       "dest": "index.js"
     }
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }
