@@ -1,8 +1,11 @@
+// public/js/user-form.js
 import { showToast } from "/js/utils.js";
 
-document
-  .querySelector("form[action='/api/users']")
-  .addEventListener("submit", async (e) => {
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.querySelector("form[action='/api/users']");
+  if (!form) return console.warn("user form not found");
+
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     try {
@@ -15,12 +18,22 @@ document
         body: JSON.stringify({ username }),
       });
 
-      if (!response.ok) throw new Error("User creation failed");
+      if (!response.ok) {
+        const err = await response.json().catch(() => null);
+        throw new Error((err && err.error) || "User creation failed");
+      }
 
-      const { _id } = await response.json();
+      const data = await response.json();
+      const _id = data._id || "";
 
-      // Copy User ID to clipboard
-      await navigator.clipboard.writeText(_id);
+      // Copy User ID to clipboard (defensive)
+      if (navigator.clipboard && _id) {
+        try {
+          await navigator.clipboard.writeText(_id);
+        } catch (err) {
+          console.warn("clipboard write failed", err);
+        }
+      }
 
       // Show success toast
       showToast(`User created! ID copied: ${_id}`);
@@ -28,6 +41,7 @@ document
       // Clear form
       e.target.reset();
     } catch (error) {
-      showToast(error.message, true);
+      showToast(error.message || "Error", true);
     }
   });
+});

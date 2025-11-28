@@ -1,15 +1,21 @@
-/**
- * Toast notification
- */
+// public/js/utils.js
 export function showToast(message, isError = false) {
   const toast = document.getElementById("toast");
+  if (!toast) return console.warn("toast element missing");
+
   const icon = toast.querySelector("#toast-icon");
   const toastMsg = document.getElementById("toast-message");
 
+  // Defensive check in case structure differs
+  if (!icon || !toastMsg) return console.warn("toast sub-elements missing");
+
   // Set styles
-  toast.firstElementChild.className = `px-6 py-3 rounded-lg shadow-md text-white font-medium flex items-center ${
-    isError ? "bg-red-500" : "bg-green-500"
-  }`;
+  const container = toast.firstElementChild;
+  if (container) {
+    container.className = `px-6 py-3 rounded-lg shadow-md text-white font-medium flex items-center ${
+      isError ? "bg-red-500" : "bg-green-500"
+    }`;
+  }
 
   // Set icon
   icon.innerHTML = isError
@@ -30,19 +36,19 @@ export function showToast(message, isError = false) {
   }, 3000);
 
   // Add line break if message is long
-  if (message.length > 30) {
+  if (message && message.length > 30) {
     toastMsg.classList.add("whitespace-pre-line", "text-left");
   } else {
     toastMsg.classList.remove("whitespace-pre-line", "text-left");
   }
 }
 
-/**
- * Toggle loading state
- */
 export function setLoading(isLoading) {
   const spinner = document.getElementById("spinner");
   const text = document.getElementById("submit-text");
+
+  // Defensive checks
+  if (!spinner || !text) return;
 
   if (isLoading) {
     spinner.classList.remove("hidden");
