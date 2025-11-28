@@ -1,4 +1,4 @@
-import { showToast } from "./utils.js";
+import { showToast } from "/js/utils.js";
 
 document
   .querySelector("form[action='/api/users']")
